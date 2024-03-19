@@ -1,4 +1,5 @@
 import requests
+import pandas
 
 
 class LTA(object):
@@ -30,3 +31,24 @@ class LTA(object):
         response = requests.get(url, headers=self.__get_headers())
 
         return response.json()
+
+    def get_passenger_vol_by_OD_bus_stops(self, filepath: str):
+        url = self.url + "PV/ODBus"
+        response = requests.get(url, headers=self.__get_headers())
+        responseJson = response.json()
+
+        # retrieve link and
+        try:
+            print(responseJson)
+            uri = responseJson["value"][0]["Link"]
+            r = requests.get(uri)
+
+            if r.status_code == 200:
+                with open(filepath, 'wb') as file:
+                    file.write(response.content)
+                print()
+            else:
+                print("Failed to download file")
+        except error as error:
+            return error
+        return
