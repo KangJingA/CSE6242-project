@@ -1,6 +1,4 @@
 import requests
-import pandas
-
 
 class LTA(object):
 
