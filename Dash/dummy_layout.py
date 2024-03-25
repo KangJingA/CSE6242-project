@@ -5,39 +5,61 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
+
+
+
 # Initialize the app - incorporate a Dash Bootstrap theme
 external_stylesheets = [dbc.themes.FLATLY]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 
 # dummy data # 
-items = [3,4,5,6,7] # dummy dropdown
-days = ["WEEKDAYS","WEENKEND/HOLIDAYS"] # dummy dropdown
+items = [10,3,4,5,6,7] # dummy dropdown_busnumber
 dummy_vol = pd.read_csv("dummy_vol.csv")
 selected = dummy_vol.query("DAY_TYPE == 'WEEKDAY' and BUS_NUMBER == 4")
 
 dummy_co2 = pd.read_csv("co2_dummy.csv")
 selected2 = dummy_co2.query("DAY_TYPE == 'WEEKDAY' and BUS_NUMBER == 4")
 
-bus_stop = pd.read_csv("BUS_stop_dummy.csv")
+bus_stop = pd.read_csv("dummy_for_route.csv")
+assumption = [{'Vehicle type':'Bus','CO2 emission': 1500},{'Vehicle type':'Private car','CO2 emission': 4500}]
+assumption = pd.DataFrame.from_dict(assumption)
 
 # Chart (Temporary)
 ## Singapore map + busstop dummy
 px.set_mapbox_access_token(open("mapbox_token.py").read())  # public access token
-fig = px.scatter_mapbox(bus_stop, lat="Latitude", lon="Longitude", color="co2_reduction", size="avg_passenger_vol",
-                  color_continuous_scale="Viridis", size_max=15, zoom=10, width = 700, height =480)
+
+# draw bus route
+
+fig_route = px.scatter_mapbox(bus_stop, lat="Latitude", lon="Longitude", color = "all_taps", size = "all_taps",
+                 size_max=15, zoom=11, height =540)
+route = list(range(len(bus_stop))) # dummy route of selected bus 10; row number value
+fig_route.add_traces(px.line_mapbox(bus_stop.loc[route], lat="Latitude", lon="Longitude").data)
+
+
+
 
 ## bar chart 1
-fig_p = px.bar(selected, x="TIME_PER_HOUR", y="TOTAL_PASSENGER_VOL",
-               title="Passenger volume", 
-               labels={'TIME_PER_HOUR':'Hour', 'TOTAL_PASSENGER_VOL':"Passenger volume(person)"},
-               width=400, height=320)
-## bar chart 2
 fig_c = px.bar(selected2, x="TIME_PER_HOUR", y="co2_reduction",
-               title="CO2 emission reduction", 
-               labels={'TIME_PER_HOUR':'Hour', 'co2_reduction':"CO2 emission reduction"},
-               width=400, height=320)
+               labels={'TIME_PER_HOUR':'month', 'co2_reduction':"CO2 emission reduction"},
+               width=320, height=260)
+fig_c.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
+fig_c.update_traces(marker_color='green')
 
+
+## bar chart 2
+fig_p = px.bar(selected, x="TIME_PER_HOUR", y="TOTAL_PASSENGER_VOL",
+               labels={'TIME_PER_HOUR':'month', 'TOTAL_PASSENGER_VOL':"Passenger volume(person)"},
+                width=320, height=260)
+fig_p.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
+
+
+## bar chart 3 - Assumption bar chart
+fig_a = px.bar(assumption, x="Vehicle type", y="CO2 emission",
+               labels={'Vehicle type':'Vehicle_type', 'CO2 emission':"Total CO2 emission"},
+               width=320, height=260)
+fig_a.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
+fig_a.update_traces(marker_color='red')
 
 
 # App layout
@@ -49,19 +71,50 @@ app.layout = dbc.Container([
         dbc.Col([
             dbc.Row([dcc.Dropdown(id='dropdown_1',
                     options=items,
-                    value = 3)
+                    value = "select bus number",
+                    style={'height': '40px', 'width': '150px'})
                     ]),
-            dbc.Row([dcc.Graph(figure=fig , id='Singapore_map')])         
+            dbc.Row([
+                dcc.Graph(figure=fig_route , id='Singapore_map')
+                ],style={"height": "60vh"})         
         ], width=6),
 
         dbc.Col([
-            dbc.Row([dcc.Dropdown(id='dropdown_2',
-                    options=days,
-                    value = "WEEKDAYS")
-                    ])
-            dbc.Row([dcc.Graph(figure=fig_c , id='co2_chart')]),
-            dbc.Row([dcc.Graph(figure=fig_p , id='passenger_chart')])
-          
+            dbc.Row([
+                dbc.Col([
+                    html.Div([
+                        html.P(id='co2-title',
+                               children='CO2 Reduction',
+                               className='font-weight-bold'),
+                        dcc.Graph(figure=fig_c , id='co2_chart')
+                            ])
+                        ]),
+                dbc.Col([
+                    html.Div([
+                        html.P(id='passenger-title',
+                               children='Passenger Volume',
+                               className='font-weight-bold'),
+                        dcc.Graph(figure=fig_p , id='passenger_chart')                                          
+                        ])
+                        ])
+                    ],
+                    style={"height": "40vh",
+                           'margin-top': '8px', 
+                           'margin-left': '8px',
+                           'margin-bottom': '16px', 
+                           'margin-right': '8px'}
+                    ),
+            dbc.Row([
+                dbc.Col([
+                    html.Div([
+                            html.P(id='assumption-title',
+                                   children='Assumption',
+                                   className='font-weight-bold'),
+                            dcc.Graph(figure=fig_a , id='assumption_chart'),
+                            ])
+                        ]),
+                dbc.Col([html.Div('Total saved CO2 emission: 3000')]) 
+                    ], style={"height": "20vh"})                  
         ], width=6),
     ]),
 
