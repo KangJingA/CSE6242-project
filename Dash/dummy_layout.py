@@ -15,14 +15,14 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 # dummy data # 
 items = [10,3,4,5,6,7] # dummy dropdown_busnumber
-dummy_vol = pd.read_csv("dummy_vol.csv")
-selected = dummy_vol.query("DAY_TYPE == 'WEEKDAY' and BUS_NUMBER == 4")
+dummy_vol =  [{'YEAR_MONTH':'2023.10','Passenger_volume': 2400},{'YEAR_MONTH':'2023.11','Passenger_volume': 3200},{'YEAR_MONTH':'2023.12','Passenger_volume': 2100}]
+dummy_vol = pd.DataFrame.from_dict(dummy_vol)
 
-dummy_co2 = pd.read_csv("co2_dummy.csv")
-selected2 = dummy_co2.query("DAY_TYPE == 'WEEKDAY' and BUS_NUMBER == 4")
+dummy_co2 = [{'YEAR_MONTH':'2023.10','CO2_reduction': 1200},{'YEAR_MONTH':'2023.11','CO2_reduction': 1600},{'YEAR_MONTH':'2023.12','CO2_reduction': 1100}]
+dummy_co2 = pd.DataFrame.from_dict(dummy_co2)
 
 bus_stop = pd.read_csv("dummy_for_route.csv")
-assumption = [{'Vehicle type':'Bus','CO2 emission': 1500},{'Vehicle type':'Private car','CO2 emission': 4500}]
+assumption = [{'Vehicle_type':'Bus','CO2_emission': 1500},{'Vehicle_type':'Private car','CO2_emission': 4500}]
 assumption = pd.DataFrame.from_dict(assumption)
 
 # Chart (Temporary)
@@ -40,26 +40,47 @@ fig_route.add_traces(px.line_mapbox(bus_stop.loc[route], lat="Latitude", lon="Lo
 
 
 ## bar chart 1
-fig_c = px.bar(selected2, x="TIME_PER_HOUR", y="co2_reduction",
-               labels={'TIME_PER_HOUR':'month', 'co2_reduction':"CO2 emission reduction"},
+fig_c = px.bar(dummy_co2, x="YEAR_MONTH", y="CO2_reduction",
+               labels={'YEAR_MONTH':'Month', 'CO2_reduction':"CO2 emission reduction"},
                width=320, height=260)
 fig_c.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
 fig_c.update_traces(marker_color='green')
 
 
 ## bar chart 2
-fig_p = px.bar(selected, x="TIME_PER_HOUR", y="TOTAL_PASSENGER_VOL",
-               labels={'TIME_PER_HOUR':'month', 'TOTAL_PASSENGER_VOL':"Passenger volume(person)"},
+fig_p = px.bar(dummy_vol, x="YEAR_MONTH", y="Passenger_volume",
+               labels={'YEAR_MONTH':'Month', 'Passenger_volume':"Passenger volume"},
                 width=320, height=260)
 fig_p.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
 
 
 ## bar chart 3 - Assumption bar chart
-fig_a = px.bar(assumption, x="Vehicle type", y="CO2 emission",
-               labels={'Vehicle type':'Vehicle_type', 'CO2 emission':"Total CO2 emission"},
+fig_a = px.bar(assumption, x="Vehicle_type", y="CO2_emission",
+               labels={'Vehicle_type':'Vehicle type', 'CO2_emission':"Total CO2 emission"},
                width=320, height=260)
 fig_a.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
-fig_a.update_traces(marker_color='red')
+fig_a.update_traces(marker_color='orange')
+
+## card for assumption
+card =  dbc.Card(
+    dbc.CardBody(
+        [
+           html.P(
+                "Total C02 emissions by the bus: 1,500 kg/km",
+                className="card-text",
+            ),
+            html.P(
+                "Total C02 emissions by private car: 4,500 kg/km",
+                className="card-text",
+            ),
+            html.P(
+                "Total Saved: 3,000 kg/km",
+                className="card-text",
+            ),
+        ],
+    ),
+)
+
 
 
 # App layout
@@ -96,7 +117,10 @@ app.layout = dbc.Container([
                                className='font-weight-bold'),
                         dcc.Graph(figure=fig_p , id='passenger_chart')                                          
                         ])
-                        ])
+                        ], style={'margin-top': '8px', 
+                           'margin-left': '8px',
+                           'margin-bottom': '16px', 
+                           'margin-right': '8px'})
                     ],
                     style={"height": "40vh",
                            'margin-top': '8px', 
@@ -113,7 +137,7 @@ app.layout = dbc.Container([
                             dcc.Graph(figure=fig_a , id='assumption_chart'),
                             ])
                         ]),
-                dbc.Col([html.Div('Total saved CO2 emission: 3000')]) 
+                dbc.Col(dbc.Card(card, color="success")) 
                     ], style={"height": "20vh"})                  
         ], width=6),
     ]),
