@@ -125,3 +125,52 @@ def merge_distance_totalTrips(df_2d, df_total_trips):
                                 right_on=['ORIGIN_PT_CODE', 'DESTINATION_PT_CODE'], 
                                 how='left')
     return merged_df
+
+# Preprocess df_taps
+def preprocess_df_taps(df_taps):
+    df = df_taps
+
+    # Filter 'PT_TYPE' == 'BUS'
+    df = df[df['PT_TYPE'] == 'BUS']
+
+    # Group by YEAR_MONTH, PT_CODE, and sum TOTAL_TAP_IN_VOLUME TOTAL_TAP_OUT_VOLUME
+    condensed_df = df.groupby(['YEAR_MONTH', 'PT_CODE']).agg({'TOTAL_TAP_IN_VOLUME': 'sum', 'TOTAL_TAP_OUT_VOLUME': 'sum'}).reset_index()
+    condensed_df['TOTAL_TAP_VOLUME'] = condensed_df['TOTAL_TAP_IN_VOLUME'] + condensed_df['TOTAL_TAP_OUT_VOLUME']
+    return condensed_df
+
+# Merge df_taps in df_distance_totalTrips
+def merge_taps_distance_totalTrips(df_taps, df_distance_totalTrips):
+    # Merge the dataframes based on matching YEAR_MONTH and PT_CODE
+    merged_df = df_distance_totalTrips.merge(df_taps, 
+                                            left_on=['YEAR_MONTH', 'ORIGIN_PT_CODE'], 
+                                            right_on=['YEAR_MONTH', 'PT_CODE'], 
+                                            how='left')
+
+    # Merge again for the destination PT_CODE
+    merged_df = merged_df.merge(df_taps, 
+                                left_on=['YEAR_MONTH', 'DESTINATION_PT_CODE'], 
+                                right_on=['YEAR_MONTH', 'PT_CODE'], 
+                                suffixes=('_origin', '_destination'), 
+                                how='left')
+
+    # Calculate the passenger volume by summing TOTAL_TAP_VOLUME from both origin and destination
+    merged_df['passenger_volume'] = merged_df['TOTAL_TAP_VOLUME_origin'] + merged_df['TOTAL_TAP_VOLUME_destination']
+
+    # Calculate the passenger volume by summing TOTAL_TAP_VOLUME from both origin and destination
+    merged_df['passenger_volume'] = merged_df['TOTAL_TAP_VOLUME_origin'] + merged_df['TOTAL_TAP_VOLUME_destination']
+
+    # Drop unnecessary columns
+    merged_df.drop(columns=['PT_CODE_origin', 'TOTAL_TAP_IN_VOLUME_origin', 'TOTAL_TAP_OUT_VOLUME_origin',  'PT_CODE_destination',
+                            'TOTAL_TAP_IN_VOLUME_destination', 'TOTAL_TAP_OUT_VOLUME_destination', 'ORIGIN_PT_CODE', 'DESTINATION_PT_CODE'], inplace=True)
+    return merged_df
+
+# Compute bus/car CO2 emission
+def get_df_co2(df_taps_distance_totalTrips):
+    df = df_taps_distance_totalTrips
+    bus_CO2_rate = 0.48  # kg/km
+    car_CO2_rate = 0.167  # kg/km
+    bus2car_ratio = 1/4  # approximation: 1/4 passengers taking car and carpool
+    df['co2_by_bus'] = df['origin_dest_distance']*df['TOTAL_TRIPS']*bus_CO2_rate
+    df['co2_by_car'] = df['origin_dest_distance']*df['TOTAL_TRIPS']*df['passenger_volume']*bus2car_ratio*car_CO2_rate
+    df['co2_reduction'] = df['co2_by_car'] - df['co2_by_bus']
+    return df
