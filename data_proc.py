@@ -3,6 +3,28 @@ import pandas as pd
 import os
 from data.buses import LTA
 
+def to_df(data):
+    data = pd.DataFrame.from_dict(data['value'])
+    return data
+
+def get_df_from_zips(zip_folder_path: str):
+    # List all zip files in the directory
+    zip_files = [file for file in os.listdir(zip_folder_path) if file.endswith('.zip')]
+
+    # Initialize an empty list to store DataFrames
+    dfs = []
+
+    # Iterate through each zip file
+    for zip_file in zip_files:
+        # Read the CSV file directly from the zip archive
+        df = pd.read_csv(f'{zip_folder_path}/{zip_file}', compression='zip')
+        # Append the DataFrame to the list
+        dfs.append(df)
+
+    # Concatenate all DataFrames into a single DataFrame
+    final_df = pd.concat(dfs, ignore_index=True)
+    return final_df
+
 # Preprocess df_bus_route to get origin-destination distances for each bus no.
 def preprocess_df_bus_route_1d(df_bus_route):
     """
@@ -174,3 +196,32 @@ def get_df_co2(df_taps_distance_totalTrips):
     df['co2_by_car'] = df['origin_dest_distance']*df['TOTAL_TRIPS']*df['passenger_volume']*bus2car_ratio*car_CO2_rate
     df['co2_reduction'] = df['co2_by_car'] - df['co2_by_bus']
     return df
+
+# Reformat the DataFrame
+def get_route_csv(df_co2):
+    formatted_df = df_co2[['YEAR_MONTH', 'ServiceNo', 'co2_by_car', 'co2_by_bus', 'co2_reduction', 'passenger_volume']]
+    formatted_df = formatted_df.sort_values(by=['YEAR_MONTH', 'ServiceNo']).reset_index(drop=True)
+    formatted_df.to_csv('route.csv', index=False)
+    return formatted_df
+
+# Merge df_bus_route, df_bus_stops, and df_taps
+def get_df_route_stops_taps(df_bus_stops, df_bus_route, df_taps):
+    df_taps['PT_CODE'].astype(int)
+    df_route_stops = df_bus_route.merge(df_bus_stops, left_on='BusStopCode', right_on='BusStopCode')
+    df_route_stops = df_route_stops[['ServiceNo','Direction','BusStopCode','Latitude','Longitude']]
+    df_route_stops['BusStopCode'] = df_route_stops['BusStopCode'].astype(int)
+    df_route_stops_taps = df_route_stops.merge(df_taps, left_on='BusStopCode', right_on='PT_CODE')
+    df_route_stops_taps = df_route_stops_taps[['ServiceNo','Direction','BusStopCode','Latitude','Longitude', 'TOTAL_TAP_VOLUME']]
+    df_route_stops_taps.rename(columns={'TOTAL_TAP_VOLUME': 'all_taps'}, inplace=True)
+    return df_route_stops_taps
+
+# bar.csv
+def get_bar_csv(df_route_stops_taps):
+    df = df_route_stops_taps
+    # Group by specified columns, sum 'all_taps', and sort the DataFrame
+    summed_df = df.groupby(['ServiceNo', 'Direction', 'BusStopCode', 'Latitude', 'Longitude']).agg({'all_taps': 'sum'}).reset_index()
+    summed_df = summed_df.sort_values(by=['ServiceNo', 'Direction', 'BusStopCode'])
+
+    # Save the DataFrame to a CSV file
+    summed_df.to_csv('bar.csv', index=False)
+    return summed_df
