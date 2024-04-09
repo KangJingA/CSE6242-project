@@ -200,6 +200,7 @@ def get_df_co2(df_taps_distance_totalTrips):
 # Reformat the DataFrame
 def get_route_csv(df_co2):
     formatted_df = df_co2[['YEAR_MONTH', 'ServiceNo', 'co2_by_car', 'co2_by_bus', 'co2_reduction', 'passenger_volume']]
+    formatted_df = formatted_df.groupby(['YEAR_MONTH', 'ServiceNo']).agg({'co2_by_car': 'sum', 'co2_by_bus': 'sum', 'co2_reduction': 'sum', 'passenger_volume': 'sum'}).reset_index()
     formatted_df = formatted_df.sort_values(by=['YEAR_MONTH', 'ServiceNo']).reset_index(drop=True)
     formatted_df.to_csv('route.csv', index=False)
     return formatted_df
