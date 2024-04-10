@@ -198,11 +198,11 @@ def get_df_co2(df_taps_distance_totalTrips):
     return df
 
 # Reformat the DataFrame
-def get_route_csv(df_co2):
+def get_bar_csv(df_co2):
     formatted_df = df_co2[['YEAR_MONTH', 'ServiceNo', 'co2_by_car', 'co2_by_bus', 'co2_reduction', 'passenger_volume']]
     formatted_df = formatted_df.groupby(['YEAR_MONTH', 'ServiceNo']).agg({'co2_by_car': 'sum', 'co2_by_bus': 'sum', 'co2_reduction': 'sum', 'passenger_volume': 'sum'}).reset_index()
     formatted_df = formatted_df.sort_values(by=['YEAR_MONTH', 'ServiceNo']).reset_index(drop=True)
-    formatted_df.to_csv('route.csv', index=False)
+    formatted_df.to_csv('bar.csv', index=False)
     return formatted_df
 
 # Merge df_bus_route, df_bus_stops, and df_taps
@@ -216,7 +216,7 @@ def get_df_route_stops_taps(df_bus_stops, df_bus_route, df_taps):
     df_route_stops_taps.rename(columns={'TOTAL_TAP_VOLUME': 'all_taps'}, inplace=True)
     return df_route_stops_taps
 
-# Preprocess raw df_bus_route for bar.csv
+# Preprocess raw df_bus_route for route.csv
 def get_df_bus_route_2d(df_bus_route):
     # Preprocess df_bus_route to get buses with 2 directions
     df = df_bus_route
@@ -228,13 +228,13 @@ def get_df_bus_route_2d(df_bus_route):
     df = df[df['ServiceNo'].isin(service_no_with_two_directions)]
     return df
 
-# bar.csv
-def get_bar_csv(df_route_stops_taps):
+# route.csv
+def get_route_csv(df_route_stops_taps):
     df = df_route_stops_taps
     # Group by specified columns, sum 'all_taps', and sort the DataFrame
     summed_df = df.groupby(['ServiceNo', 'Direction', 'BusStopCode', 'Latitude', 'Longitude']).agg({'all_taps': 'sum'}).reset_index()
     summed_df = summed_df.sort_values(by=['ServiceNo', 'Direction', 'BusStopCode'])
 
     # Save the DataFrame to a CSV file
-    summed_df.to_csv('bar.csv', index=False)
+    summed_df.to_csv('route.csv', index=False)
     return summed_df
