@@ -140,7 +140,7 @@ def update_graph(col_chosen):
     fig_a = px.bar(sum_df, x="Vehicle_type", y="Sum",
                labels={'Vehicle_type':'Vehicle type', 'Sum':"Total CO2 emission"},
                width=320, height=260)
-    fig_a.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10))
+    fig_a.update_layout(font_size=10, margin=dict(t=30, b=10, l=10, r=10), yaxis_type="log")
     fig_a.update_traces(marker_color='orange')
 
     # 2-4 card of assumption statistics
@@ -148,15 +148,15 @@ def update_graph(col_chosen):
     dbc.CardBody(
         [
            html.P(
-                "Total C02 emissions by the bus:  "+ '{:>12,.0f}'.format(co2_by_bus) +" kg/km",
+                "Total C02 emissions by the bus:  "+ '{:>12,.0f}'.format(co2_by_bus) +" kg",
                 className="card-text",
             ),
             html.P(
-                "Total C02 emissions by private car:  "+ '{:>12,.0f}'.format(co2_by_car) +" kg/km",
+                "Total C02 emissions by private car:  "+ '{:>12,.0f}'.format(co2_by_car) +" kg",
                 className="card-text",
             ),
             html.P(
-                "Total Saved CO2 emission by using the bus:  " + '{:>12,.0f}'.format(total_saved) + "kg/km",
+                "Total Saved CO2 emission by using the bus:  " + '{:>12,.0f}'.format(total_saved) + "kg",
                 className="card-text",
                 ),
             ],
