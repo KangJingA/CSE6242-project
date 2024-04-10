@@ -218,28 +218,30 @@ def get_df_bus_route_2d(df_bus_route):
     return df
 
 # Merge df_bus_route, df_bus_stops, and df_taps
-def get_df_route_stops_taps(df_bus_stops, df_bus_route, df_taps):
+def get_df_route_stops_taps(df_bus_route, df_bus_stops, df_taps):
     df_taps['PT_CODE'].astype(int)
+    df_taps = df_taps.groupby(['PT_CODE']).agg({'TOTAL_TAP_VOLUME': 'sum'})
     df_route_stops = df_bus_route.merge(df_bus_stops, left_on='BusStopCode', right_on='BusStopCode')
     df_route_stops = df_route_stops[['ServiceNo','Direction','BusStopCode','Latitude','Longitude']]
     df_route_stops['BusStopCode'] = df_route_stops['BusStopCode'].astype(int)
     df_route_stops_taps = df_route_stops.merge(df_taps, left_on='BusStopCode', right_on='PT_CODE')
     df_route_stops_taps = df_route_stops_taps[['ServiceNo','Direction','BusStopCode','Latitude','Longitude', 'TOTAL_TAP_VOLUME']]
     df_route_stops_taps.rename(columns={'TOTAL_TAP_VOLUME': 'all_taps'}, inplace=True)
+    df_route_stops_taps.to_csv('route.csv', index=False)
     return df_route_stops_taps
 
 # route.csv
-def get_route_csv(df_route_stops_taps):
-    df = df_route_stops_taps
+# def get_route_csv(df_route_stops_taps):
+#     df = df_route_stops_taps
     
-    # Group by specified columns, sum 'all_taps', and sort the DataFrame
-    summed_df = df.groupby(['ServiceNo', 'Direction', 'BusStopCode', 'Latitude', 'Longitude']).agg({'all_taps': 'sum'}).reset_index()
+#     # Group by specified columns, sum 'all_taps', and sort the DataFrame
+#     summed_df = df.groupby(['ServiceNo', 'Direction', 'BusStopCode', 'Latitude', 'Longitude']).agg({'all_taps': 'sum'}).reset_index()
     
-    # Create a categorical data type with the desired order
-    bus_stop_codes_order = df_route_stops_taps['BusStopCode'].unique()
-    summed_df['BusStopCode'] = pd.Categorical(summed_df['BusStopCode'], categories=bus_stop_codes_order, ordered=True)
-    sorted_df = summed_df.sort_values(by=['ServiceNo', 'Direction', 'BusStopCode']).reset_index(drop=True)
+#     # Create a categorical data type with the desired order
+#     bus_stop_codes_order = df_route_stops_taps['BusStopCode'].unique()
+#     summed_df['BusStopCode'] = pd.Categorical(summed_df['BusStopCode'], categories=bus_stop_codes_order, ordered=True)
+#     sorted_df = summed_df.sort_values(by=['ServiceNo', 'Direction', 'BusStopCode']).reset_index(drop=True)
 
-    # Save the DataFrame to a CSV file
-    sorted_df.to_csv('route.csv', index=False)
-    return sorted_df
+#     # Save the DataFrame to a CSV file
+#     sorted_df.to_csv('route.csv', index=False)
+#     return sorted_df
