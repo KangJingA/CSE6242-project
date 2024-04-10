@@ -1,5 +1,4 @@
 import requests
-
 class LTA(object):
 
     def __init__(self, apiKey) -> None:
@@ -12,12 +11,12 @@ class LTA(object):
             "accept": "application/json"
         }
 
-    def get_bus_routes(self):
-        url = self.url + "BusRoutes"
+    def get_bus_routes(self, num):
+        url = self.url + "BusRoutes?$skip=" + str(num)
         response = requests.get(url, headers=self.__get_headers())
 
         return response.json()
-
+    
     def get_bus_stops(self):
         url = self.url + "BusStops"
         response = requests.get(url, headers=self.__get_headers())
