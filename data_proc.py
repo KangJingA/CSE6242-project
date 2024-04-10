@@ -216,6 +216,18 @@ def get_df_route_stops_taps(df_bus_stops, df_bus_route, df_taps):
     df_route_stops_taps.rename(columns={'TOTAL_TAP_VOLUME': 'all_taps'}, inplace=True)
     return df_route_stops_taps
 
+# Preprocess raw df_bus_route for bar.csv
+def get_df_bus_route_2d(df_bus_route):
+    # Preprocess df_bus_route to get buses with 2 directions
+    df = df_bus_route
+    # Get ServiceNo with two directions
+    service_no_with_two_directions = df.groupby('ServiceNo')['Direction'].max()
+    service_no_with_two_directions = service_no_with_two_directions[service_no_with_two_directions == 2].index
+
+    # Filter the original DataFrame to include only ServiceNo with two directions
+    df = df[df['ServiceNo'].isin(service_no_with_two_directions)]
+    return df
+
 # bar.csv
 def get_bar_csv(df_route_stops_taps):
     df = df_route_stops_taps
