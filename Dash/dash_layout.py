@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 # Initialize the app - incorporate a Dash Bootstrap theme
 external_stylesheets = [dbc.themes.FLATLY]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 
 # dummy data of bus route(based on first 500 bus data)
@@ -25,15 +26,16 @@ dummy_for_bar['YEAR_MONTH'].astype(str)
 app.layout = dbc.Container([
     dbc.Row([
         html.Div('''Reducing CO2 Emissions in Singapore's Public Bus Network''',
-                 className="text-primary text-center fs-4")
+                 className="text-primary text-center fs-4", style={'padding-top': '15px'})
     ]),
     dbc.Row([
         dbc.Col([
-            dbc.Row([dcc.Dropdown(id='dropdown_1',
+            dbc.Row([html.Div("Select Bus number:"), 
+                    dcc.Dropdown(id='dropdown_1',
                     options=items,
                     value='10',  # default value
                     style={'height': '40px', 'width': '150px'})
-            ]),
+            ], style={'padding-left': '80px'}),
             dbc.Row([
                 dcc.Graph(id='Singapore_map')
             ], style={"height": "60vh"})
