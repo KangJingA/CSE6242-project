@@ -68,14 +68,18 @@ app.layout = dbc.Container([
             ),
             dbc.Row([
                 dbc.Col(
+                     html.Div([html.P(id='emission-title',
+                               children='Total CO2 Emission by Vehicle Type',
+                               className='font-weight-bold'),
                         dcc.Graph(id='assumption_bar')
+                     ])
                 ),
                 dbc.Col([
                     html.Div([
                         html.P(id='assumption-title',
                                children='Assumption',
                                className='font-weight-bold'),
-                    dbc.Card(id="card_assumption", color="success")
+                    dbc.Card(id="card_assumption", color="success",style={'margin-top':'35px'})
                     ])     
                          ])
             ], style={"height": "40vh",
