@@ -66,14 +66,18 @@ app.layout = dbc.Container([
                        'margin-bottom': '16px',
                        'margin-right': '8px'}
             ),
-            dbc.Row([              
+            dbc.Row([
+                dbc.Col(
+                        dcc.Graph(id='assumption_bar')
+                ),
+                dbc.Col([
                     html.Div([
                         html.P(id='assumption-title',
                                children='Assumption',
-                               className='font-weight-bold text-center')
-                               ]),
-                dbc.Col(dcc.Graph(id='assumption_bar')),                                 
-                dbc.Col(dbc.Card(id="card_assumption", color="success"), style ={'margin-top': '30px'})
+                               className='font-weight-bold'),
+                    dbc.Card(id="card_assumption", color="success")
+                    ])     
+                         ])
             ], style={"height": "40vh",
                       'margin-top': '20px',
                       'margin-left': '8px',
@@ -120,8 +124,8 @@ def update_graph(col_chosen):
     # 1. draw chosen bus route
     px.set_mapbox_access_token(
         open("mapbox_token.py").read())  # public access token
-    fig_route = px.scatter_mapbox(df, lat="Latitude", lon="Longitude", color="all_taps", size="all_taps",
-                                  labels={'all_taps':'Passenger volume'},
+    fig_route = px.scatter_mapbox(df, lat="Latitude", lon="Longitude", color="all_taps", size="all_taps", 
+                                  labels = {'all_taps' : 'Passenger volume'},
                                   size_max=15, zoom=11, height=540)
 
     fig_route.add_traces(px.line_mapbox(
@@ -162,7 +166,7 @@ def update_graph(col_chosen):
                     className="card-text",
                 ),
                 html.P(
-                    "Total CO2 emissions by private car:  " +
+                    "Total C2 emissions by private car:  " +
                     '{:>12,.0f}'.format(co2_by_car) + " kg",
                     className="card-text",
                 ),
