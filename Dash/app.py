@@ -166,7 +166,7 @@ def update_graph(col_chosen):
                     className="card-text",
                 ),
                 html.P(
-                    "Total C2 emissions by private car:  " +
+                    "Total CO2 emissions by private car:  " +
                     '{:>12,.0f}'.format(co2_by_car) + " kg",
                     className="card-text",
                 ),
