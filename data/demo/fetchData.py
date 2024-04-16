@@ -1,6 +1,6 @@
 from buses import LTA
 import csv
-apiKey:str = "75cstockTLWN9wEcc9RE6Q=="
+apiKey:str = ""
 
 lta = LTA(apiKey)
 
