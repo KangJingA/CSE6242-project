@@ -8,29 +8,33 @@ The deployed application can be found here: [https://cse6242-project.onrender.co
 
 ### Prerequisites
 
-Access to LTA's datamall requires an api key. You may request for one here: [request for api key](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html)
+1. We suggest using python virtual envrionments. In this tutorial, `conda` is used.
+
+2. Access to LTA's datamall requires an api key. You may request for one here: [request for api key](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html)
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository and cd into the repository
 ```
 git clone https://github.com/KangJingA/CSE6242-project
 ```
 
 2. Set up virtual environment
 ```
-[CSE6242-PROJECT]$ python3.7 -m venv venv
+[CSE6242-PROJECT]$ conda create --name venv
 ```
 
 3. Activate virtual environment
 ```
-[CSE6242-PROJECT]$ . venv/bin/activate
+[CSE6242-PROJECT]$ conda activate ./venv
 ```
 
 4. Install all dependencies
 ```
-[CSE6242-PROJECT]$ pip install -r requirements.txt
+[CSE6242-PROJECT]$ conda install --file requirements.txt
 ```
+
+### Execution
 
 5. Run Dash Application
 ```
